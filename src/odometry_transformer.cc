@@ -102,6 +102,12 @@ void OdometryTransformer::advertiseRosTopics() {
   odometry_pub_ =
       nh_.advertise<nav_msgs::Odometry>("target_odometry", queue_size_);
   ROS_INFO("Advertising %s", odometry_pub_.getTopic().c_str());
+  pose_pub_ =
+      nh_.advertise<geometry_msgs::PoseStamped>("target_pose", queue_size_);
+  ROS_INFO("Advertising %s", pose_pub_.getTopic().c_str());
+  twist_pub_ =
+      nh_.advertise<geometry_msgs::TwistStamped>("target_twist", queue_size_);
+  ROS_INFO("Advertising %s", twist_pub_.getTopic().c_str());
 }
 
 void OdometryTransformer::broadcastCalibration() {
@@ -199,6 +205,8 @@ void OdometryTransformer::receiveOdometry(
   // The angular velocity is identical anywhere on the rigid body.
   const Eigen::Vector3d T_w_T = T_ST_.rotation().inverse() * S_w_S;
 
+  // TODO(rikba): Transform covariance.
+
   // Convert to target odometry.
   nav_msgs::Odometry target_odometry;
   target_odometry.header = source_odometry->header;
@@ -207,10 +215,20 @@ void OdometryTransformer::receiveOdometry(
   tf2::toMsg(T_v_T, target_odometry.twist.twist.linear);
   tf2::toMsg(T_w_T, target_odometry.twist.twist.angular);
 
-  // TODO(rikba): Transform covariance.
+  // Convert to pose and twist messages
+  geometry_msgs::PoseStamped target_pose;
+  target_pose.header = source_odometry->header;
+  target_pose.pose = target_odometry.pose.pose;
+
+  geometry_msgs::TwistStamped target_twist;
+  target_twist.header = target_pose.header;
+  target_twist.header.frame_id = target_frame_;
+  target_twist.twist = target_odometry.twist.twist;
 
   // Publish transformed odometry.
   odometry_pub_.publish(target_odometry);
+  pose_pub_.publish(target_pose);
+  twist_pub_.publish(target_twist);
 }
 
 } // namespace odometry_transformer

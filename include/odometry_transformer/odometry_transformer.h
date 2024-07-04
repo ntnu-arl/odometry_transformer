@@ -7,6 +7,8 @@
 #include <Eigen/Geometry>
 #include <dynamic_reconfigure/server.h>
 #include <nav_msgs/Odometry.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/TwistStamped.h>
 #include <ros/ros.h>
 #include <tf2_ros/static_transform_broadcaster.h>
 
@@ -49,6 +51,8 @@ private:
 
   ros::Subscriber odometry_sub_;
   ros::Publisher odometry_pub_;
+  ros::Publisher pose_pub_;
+  ros::Publisher twist_pub_;
 };
 } // namespace odometry_transformer
 
