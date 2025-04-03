@@ -35,6 +35,8 @@ private:
   std::string target_frame_ = "";
   int queue_size_ = 1;
   bool tcp_no_delay_ = false;
+  int drop_ = 0;
+  int drop_counter_ = 0;
 
   // Optionally publish TF and offer dynamic reconfigure if calibration is set
   // from ROS parameter server.

@@ -85,6 +85,9 @@ void OdometryTransformer::getRosParameters() {
   } else {
     ROS_INFO("TCP no delay de-activated.");
   }
+
+  nh_private_.getParam("drop", drop_);
+  ROS_INFO("Drop: %d odom messages out of %d", drop_, drop_+1);
 }
 
 void OdometryTransformer::subscribeToRosTopics() {
@@ -180,6 +183,17 @@ void OdometryTransformer::reconfigureOdometryTransformer(
 void OdometryTransformer::receiveOdometry(
     const nav_msgs::OdometryConstPtr &source_odometry) {
   ROS_INFO_ONCE("Received first odometry message.");
+
+  // Drop
+  if (drop_counter_ == drop_)
+  {
+    drop_counter_ = 0;
+  }
+  else
+  {
+    drop_counter_++;
+    return;
+  }
 
   // Get source pose in inertial/world coordinate frame.
   Eigen::Affine3d T_IS;
